@@ -1,0 +1,3030 @@
+mysql> use retail;
+Database changed
+mysql> show tables;
++------------------+
+| Tables_in_retail |
++------------------+
+| salespeople      |
++------------------+
+1 row in set (0.00 sec)
+ describe salespeople;
++-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| snum  | int(11)      | NO   | PRI | NULL    |       |
+| sname | varchar(30)  | YES  |     | NULL    |       |
+| city  | varchar(30)  | NO   |     | NULL    |       |
+| com   | decimal(4,2) | NO   |     | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+4 rows in set (0.06 sec)
+
+
+mysql> select sum(amt) from orders;
++----------+
+| sum(amt) |
++----------+
+| 26658.40 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> select max(amt) from orders;
++----------+
+| max(amt) |
++----------+
+|  9891.88 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> select min(amt) from orders;
++----------+
+| min(amt) |
++----------+
+|    18.69 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> select count(amt) from orders;
++------------+
+| count(amt) |
++------------+
+|         10 |
++------------+
+1 row in set (0.00 sec)
+
+mysql> select count(amt), odate from orders group by odate;
++------------+------------+
+| count(amt) | odate      |
++------------+------------+
+|          5 | 1996-03-10 |
+|          2 | 1996-04-10 |
+|          1 | 1996-05-10 |
+|          2 | 1996-06-10 |
++------------+------------+
+4 rows in set (0.00 sec)
+
+
+mysql> select count(amt) as amount, odate from orders group by odate having amount > 1;
++--------+------------+
+| amount | odate      |
++--------+------------+
+|      5 | 1996-03-10 |
+|      2 | 1996-04-10 |
+|      2 | 1996-06-10 |
++--------+------------+
+3 rows in set (0.00 sec)
+
+28 ques:
+
+mysql> select a.cname, b.com from customer a, salespeople b where a.snum = b.snum and b.com>0.12;
++----------+------+
+| cname    | com  |
++----------+------+
+| Liu      | 0.13 |
+| Grass    | 0.13 |
+| Cisneros | 0.15 |
++----------+------+
+3 rows in set (0.00 sec)
+
+33 ques:
+
+mysql> select max(a.amt), b.snum, c.sname from orders a, customer b, salespeople c where (b.snum = c.snum and b.cnum = a.cnum and (c.sname = 'Rifkin' or c.sname = 'Serres')) group by b.snum;
++------------+------+--------+
+| max(a.amt) | snum | sname  |
++------------+------+--------+
+|    5160.45 | 1002 | Serres |
+|    1098.16 | 1007 | Rifkin |
++------------+------+--------+
+2 rows in set (0.00 sec)
+
+11 ques:
+
+mysql> select a.sname, b.cname, a.city from salespeople a, customer b where a.city = b.city;
++--------+----------+----------+
+| sname  | cname    | city     |
++--------+----------+----------+
+| Peel   | Hofman   | London   |
+| Motika | Hofman   | London   |
+| Fran   | Hofman   | London   |
+| Serres | Liu      | San Jose |
+| Peel   | Clemens  | London   |
+| Motika | Clemens  | London   |
+| Fran   | Clemens  | London   |
+| Serres | Cisneros | San Jose |
++--------+----------+----------+
+8 rows in set (0.00 sec)
+
+38 ques:
+
+mysql> select a.cname, a.city, a.rating from customer a,(select city, max(rating) as maxrating from customer group by city) b where a.rating = b.maxrating and a.city = b.city;
++----------+----------+--------+
+| cname    | city     | rating |
++----------+----------+--------+
+| Hofman   | London   |    100 |
+| Giovanni | Rome     |    200 |
+| Grass    | Berlin   |    300 |
+| Clemens  | London   |    100 |
+| Cisneros | San Jose |    300 |
++----------+----------+--------+
+5 rows in set (0.06 sec)
+
+mysql> select a.cname, a.city, a.rating, a.cnum from customer a,(select city, max(rating) as maxrating from customer group by city) b where a.rating = b.maxrating and a.city = b.city;
++----------+----------+--------+------+
+| cname    | city     | rating | cnum |
++----------+----------+--------+------+
+| Hofman   | London   |    100 | 2001 |
+| Giovanni | Rome     |    200 | 2002 |
+| Grass    | Berlin   |    300 | 2004 |
+| Clemens  | London   |    100 | 2006 |
+| Cisneros | San Jose |    300 | 2008 |
++----------+----------+--------+------+
+5 rows in set (0.00 sec)
+
+40 ques:
+
+mysql> select cname, city from customer where city = 'San Jose';
++----------+----------+
+| cname    | city     |
++----------+----------+
+| Liu      | San Jose |
+| Cisneros | San Jose |
++----------+----------+
+2 rows in set (0.00 sec)
+
+mysql> select cname, city, rating from customer where city = 'San Jose';
++----------+----------+--------+
+| cname    | city     | rating |
++----------+----------+--------+
+| Liu      | San Jose |    200 |
+| Cisneros | San Jose |    300 |
++----------+----------+--------+
+2 rows in set (0.00 sec)
+
+
+
+Joins:
+
+mysql> select a.cnum, a.cname, a.city, a.rating, a.snum from customer a join salespeople b on a.snum = b.snum;
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2001 | Hofman   | London   |    100 | 1001 |
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2006 | Clemens  | London   |    100 | 1001 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+7 rows in set (0.00 sec)
+
+mysql> select a.cnum, a.cname, a.city, a.rating, a.snum, b.sname from customer a join salespeople b on a.snum = b.snum;
++------+----------+----------+--------+------+---------+
+| cnum | cname    | city     | rating | snum | sname   |
++------+----------+----------+--------+------+---------+
+| 2001 | Hofman   | London   |    100 | 1001 | Peel    |
+| 2002 | Giovanni | Rome     |    200 | 1003 | AxelRod |
+| 2003 | Liu      | San Jose |    200 | 1002 | Serres  |
+| 2004 | Grass    | Berlin   |    300 | 1002 | Serres  |
+| 2006 | Clemens  | London   |    100 | 1001 | Peel    |
+| 2007 | Pereira  | Rome     |    100 | 1004 | Motika  |
+| 2008 | Cisneros | San Jose |    300 | 1007 | Rifkin  |
++------+----------+----------+--------+------+---------+
+
+7 rows in set (0.00 sec)
+
+mysql> select a.cnum, a.cname, a.city, a.rating, a.snum, b.sname from customer a, salespeople b where a.snum = b.snum;
++------+----------+----------+--------+------+---------+
+| cnum | cname    | city     | rating | snum | sname   |
++------+----------+----------+--------+------+---------+
+| 2001 | Hofman   | London   |    100 | 1001 | Peel    |
+| 2002 | Giovanni | Rome     |    200 | 1003 | AxelRod |
+| 2003 | Liu      | San Jose |    200 | 1002 | Serres  |
+| 2004 | Grass    | Berlin   |    300 | 1002 | Serres  |
+| 2006 | Clemens  | London   |    100 | 1001 | Peel    |
+| 2007 | Pereira  | Rome     |    100 | 1004 | Motika  |
+| 2008 | Cisneros | San Jose |    300 | 1007 | Rifkin  |
++------+----------+----------+--------+------+---------+
+7 rows in set (0.02 sec)
+
+mysql> select month(odate) from orders;
++--------------+
+| month(odate) |
++--------------+
+|            3 |
+|            3 |
+|            3 |
+|            3 |
+|            3 |
+|            4 |
+|            5 |
+|            4 |
+|            6 |
+|            6 |
++--------------+
+10 rows in set (0.08 sec)
+
+mysql> select * from orders a, customer b, salespeople c where a.cnum = b.cnum and b.snum = c.snum;
++------+---------+------------+------+------+----------+----------+--------+------+------+---------+-----------+------+
+| onum | amt     | odate      | cnum | cnum | cname    | city     | rating | snum | snum | sname   | city      | com  |
++------+---------+------------+------+------+----------+----------+--------+------+------+---------+-----------+------+
+| 3003 |  767.19 | 1996-03-10 | 2001 | 2001 | Hofman   | London   |    100 | 1001 | 1001 | Peel    | London    | 0.12 |
+| 3007 |   75.75 | 1996-04-10 | 2002 | 2002 | Giovanni | Rome     |    200 | 1003 | 1003 | AxelRod | New York  | 0.10 |
+| 3009 | 1713.23 | 1996-04-10 | 2002 | 2002 | Giovanni | Rome     |    200 | 1003 | 1003 | AxelRod | New York  | 0.10 |
+| 3005 | 5160.45 | 1996-03-10 | 2003 | 2003 | Liu      | San Jose |    200 | 1002 | 1002 | Serres  | San Jose  | 0.13 |
+| 3010 | 1309.95 | 1996-06-10 | 2004 | 2004 | Grass    | Berlin   |    300 | 1002 | 1002 | Serres  | San Jose  | 0.13 |
+| 3008 | 4723.00 | 1996-05-10 | 2006 | 2006 | Clemens  | London   |    100 | 1001 | 1001 | Peel    | London    | 0.12 |
+| 3011 | 9891.88 | 1996-06-10 | 2006 | 2006 | Clemens  | London   |    100 | 1001 | 1001 | Peel    | London    | 0.12 |
+| 3002 | 1900.10 | 1996-03-10 | 2007 | 2007 | Pereira  | Rome     |    100 | 1004 | 1004 | Motika  | London    | 0.11 |
+| 3001 |   18.69 | 1996-03-10 | 2008 | 2008 | Cisneros | San Jose |    300 | 1007 | 1007 | Rifkin  | Barcelona | 0.15 |
+| 3006 | 1098.16 | 1996-03-10 | 2008 | 2008 | Cisneros | San Jose |    300 | 1007 | 1007 | Rifkin  | Barcelona | 0.15 |
++------+---------+------------+------+------+----------+----------+--------+------+------+---------+-----------+------+
+10 rows in set (0.00 sec)
+
+mysql> select * from salespeople;
+Empty set (0.03 sec)
+
+mysql> insert into salespeople values(1001, 'Peel', 'London', 0.12);
+Query OK, 1 row affected (0.11 sec)
+
+mysql> insert into salespeople values(1002, 'Serres', 'San Jose', 0.13);
+Query OK, 1 row affected (0.05 sec)
+
+mysql> insert into salespeople values(1004, 'Motika', 'London', 0.11);
+Query OK, 1 row affected (0.10 sec)
+
+mysql> insert into salespeople values(1007, 'Rifkin', 'Barcelona', 0.15);
+Query OK, 1 row affected (0.11 sec)
+
+mysql> insert all
+    -> into salespeople(
+    -> values(1003, 'AxelRod', 'New York', 0.10),
+    -> values(1005, 'Fran', 'London', 0.26)
+    -> );
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'all
+into salespeople(
+values(1003, 'AxelRod', 'New York', 0.10),
+values(1005, 'F' at line 1
+mysql> insert into salespeople values(1003,'AxelRod','New York',0.10),
+    -> (1005,'Fran','London',0.26);
+Query OK, 2 rows affected (0.11 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> select * from salespeople;
++------+---------+-----------+------+
+| snum | sname   | city      | com  |
++------+---------+-----------+------+
+| 1001 | Peel    | London    | 0.12 |
+| 1002 | Serres  | San Jose  | 0.13 |
+| 1003 | AxelRod | New York  | 0.10 |
+| 1004 | Motika  | London    | 0.11 |
+| 1005 | Fran    | London    | 0.26 |
+| 1007 | Rifkin  | Barcelona | 0.15 |
++------+---------+-----------+------+
+6 rows in set (0.00 sec)
+
+mysql> create table if not exists customer(cnum int not null, cname varchar(30) not null, city varchar(30) not null, rating int not null, snum int not null, primary key(cnum), foreign key(snum) references salespeople(snum));
+Query OK, 0 rows affected (0.41 sec)
+
+mysql> describe customers;
+ERROR 1146 (42S02): Table 'retail.customers' doesn't exist
+mysql> describe customer;
++--------+-------------+------+-----+---------+-------+
+| Field  | Type        | Null | Key | Default | Extra |
++--------+-------------+------+-----+---------+-------+
+| cnum   | int(11)     | NO   | PRI | NULL    |       |
+| cname  | varchar(30) | NO   |     | NULL    |       |
+| city   | varchar(30) | NO   |     | NULL    |       |
+| rating | int(11)     | NO   |     | NULL    |       |
+| snum   | int(11)     | NO   | MUL | NULL    |       |
++--------+-------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> describe salespeople;
++-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| snum  | int(11)      | NO   | PRI | NULL    |       |
+| sname | varchar(30)  | YES  |     | NULL    |       |
+| city  | varchar(30)  | NO   |     | NULL    |       |
+| com   | decimal(4,2) | NO   |     | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> insert into customer values(2001, 'Hofman','London',100, 1001),
+    -> (2002, 'Giovanni','Rome', 200, 1003),
+    -> (2003, 'Liu','San Jose', 200, 1002),
+    -> (2004, 'Grass', 'Berlin', 300, 1002),
+    -> (2006,'Clemens','London',100,1001),
+    -> (2008,'Cisneros','San Jose', 300, 1007),
+    -> (2007,'Pereira','Rome',100,1004);
+Query OK, 7 rows affected (0.14 sec)
+Records: 7  Duplicates: 0  Warnings: 0
+
+mysql> select * from customer;
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2001 | Hofman   | London   |    100 | 1001 |
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2006 | Clemens  | London   |    100 | 1001 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+7 rows in set (0.00 sec)
+
+mysql> select * from salespeople;
++------+---------+-----------+------+
+| snum | sname   | city      | com  |
++------+---------+-----------+------+
+| 1001 | Peel    | London    | 0.12 |
+| 1002 | Serres  | San Jose  | 0.13 |
+| 1003 | AxelRod | New York  | 0.10 |
+| 1004 | Motika  | London    | 0.11 |
+| 1005 | Fran    | London    | 0.26 |
+| 1007 | Rifkin  | Barcelona | 0.15 |
++------+---------+-----------+------+
+6 rows in set (0.00 sec)
+
+mysql> create table if not exists orders(onum int not null, amt decimal(7,2), not null, odate date not null, cnum int not null, primary key(onum), foreign key(cnum) references customer(cnum));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'not null, odate date not null, cnum int not null, primary key(onum), foreign key' at line 1
+mysql> create table if not exists orders(onum int not null, amt decimal(7,2) not null, odate date not null, cnum int not null, primary key(onum), foreign key(cnum) references customer(cnum));
+Query OK, 0 rows affected (0.44 sec)
+
+mysql> describe orders;
++-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| onum  | int(11)      | NO   | PRI | NULL    |       |
+| amt   | decimal(7,2) | NO   |     | NULL    |       |
+| odate | date         | NO   |     | NULL    |       |
+| cnum  | int(11)      | NO   | MUL | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> mysql> use retail;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'mysql> use retail' at line 1
+mysql> Database changed
+    -> mysql> show tables;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'Database changed
+mysql> show tables' at line 1
+mysql> +------------------+
+    -> | Tables_in_retail |
+    -> +------------------+
+    -> | salespeople      |
+    -> +------------------+
+    -> 1 row in set (0.00 sec)
+mysql> use retail;
+Database changed
+mysql> show tables;
++------------------+
+| Tables_in_retail |
++------------------+
+| customer         |
+| orders           |
+| salespeople      |
++------------------+
+3 rows in set (0.00 sec)
+
+mysql> insert into orders values(3001, 18.69,'1996-03-10',2008),
+    -> (3003, 767.19, '1996-03-10', 2001),
+    -> (3002, 1900.10, '1996-03-10',2007),
+    -> (3005, 5160.45, '1996-03-10', 2003),
+    -> (3006, 1098.16, '1996-03-10', 2008),
+    -> (3009, 1713.23, '1996-04-10', 2002),
+    -> (3007, 75.75, '1996-04-10', 2002),
+    -> (3008, 4723.00, '1996-05-10', 2006),
+    -> (3010, 1309.95, '1996-06-10', 2004),
+    -> (3011, 9891.88, '1996-06-10', 2006);
+Query OK, 10 rows affected (0.19 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> select * from orders;
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3001 |   18.69 | 1996-03-10 | 2008 |
+| 3002 | 1900.10 | 1996-03-10 | 2007 |
+| 3003 |  767.19 | 1996-03-10 | 2001 |
+| 3005 | 5160.45 | 1996-03-10 | 2003 |
+| 3006 | 1098.16 | 1996-03-10 | 2008 |
+| 3007 |   75.75 | 1996-04-10 | 2002 |
+| 3008 | 4723.00 | 1996-05-10 | 2006 |
+| 3009 | 1713.23 | 1996-04-10 | 2002 |
+| 3010 | 1309.95 | 1996-06-10 | 2004 |
+| 3011 | 9891.88 | 1996-06-10 | 2006 |
++------+---------+------------+------+
+10 rows in set (0.00 sec)
+
+mysql> select sysdate;
+ERROR 1054 (42S22): Unknown column 'sysdate' in 'field list'
+mysql> select sysdate();
++---------------------+
+| sysdate()           |
++---------------------+
+| 2018-01-03 22:52:39 |
++---------------------+
+1 row in set (0.02 sec)
+
+
+1 ques:
+
+mysql> describe salespeople;
++-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| snum  | int(11)      | NO   | PRI | NULL    |       |
+| sname | varchar(30)  | YES  |     | NULL    |       |
+| city  | varchar(30)  | NO   |     | NULL    |       |
+| com   | decimal(4,2) | NO   |     | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+2 ques:
+
+mysql> select * from customer;
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2001 | Hofman   | London   |    100 | 1001 |
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2006 | Clemens  | London   |    100 | 1001 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+7 rows in set (0.00 sec)
+
+mysql> select * from customer where rating = 100;
++------+---------+--------+--------+------+
+| cnum | cname   | city   | rating | snum |
++------+---------+--------+--------+------+
+| 2001 | Hofman  | London |    100 | 1001 |
+| 2006 | Clemens | London |    100 | 1001 |
+| 2007 | Pereira | Rome   |    100 | 1004 |
++------+---------+--------+--------+------+
+3 rows in set (0.00 sec)
+
+3 ques:
+
+mysql> select * from customer where city is null;
+Empty set (0.00 sec)
+
+4 ques:
+
+mysql> select customer.cnum, salespeople.snum, salespeople.sname, orders.odate, max(orders.amt) innerjoin from customer, salespeople, orders
+    -> where orders.cnum = customer.cnum
+    ->   and customer.snum = salespeople.snum
+    -> group by orders.odate, orders.cnum;
++------+------+---------+------------+-----------+
+| cnum | snum | sname   | odate      | innerjoin |
++------+------+---------+------------+-----------+
+| 2001 | 1001 | Peel    | 1996-03-10 |    767.19 |
+| 2003 | 1002 | Serres  | 1996-03-10 |   5160.45 |
+| 2007 | 1004 | Motika  | 1996-03-10 |   1900.10 |
+| 2008 | 1007 | Rifkin  | 1996-03-10 |   1098.16 |
+| 2002 | 1003 | AxelRod | 1996-04-10 |   1713.23 |
+| 2006 | 1001 | Peel    | 1996-05-10 |   4723.00 |
+| 2004 | 1002 | Serres  | 1996-06-10 |   1309.95 |
+| 2006 | 1001 | Peel    | 1996-06-10 |   9891.88 |
++------+------+---------+------------+-----------+
+8 rows in set (0.00 sec)
+
+mysql> select customer.cnum, salespeople.snum, salespeople.sname, orders.odate, max(orders.amt) innerjoin from customer, salespeople, orders
+    -> where orders.cnum = customer.cnum
+    -> and customer.snum = salespeople.snum
+    -> group by orders.odate, orders.cnum, salespeople.sname;
++------+------+---------+------------+-----------+
+| cnum | snum | sname   | odate      | innerjoin |
++------+------+---------+------------+-----------+
+| 2001 | 1001 | Peel    | 1996-03-10 |    767.19 |
+| 2003 | 1002 | Serres  | 1996-03-10 |   5160.45 |
+| 2007 | 1004 | Motika  | 1996-03-10 |   1900.10 |
+| 2008 | 1007 | Rifkin  | 1996-03-10 |   1098.16 |
+| 2002 | 1003 | AxelRod | 1996-04-10 |   1713.23 |
+| 2006 | 1001 | Peel    | 1996-05-10 |   4723.00 |
+| 2004 | 1002 | Serres  | 1996-06-10 |   1309.95 |
+| 2006 | 1001 | Peel    | 1996-06-10 |   9891.88 |
++------+------+---------+------------+-----------+
+8 rows in set (0.00 sec)
+
+mysql> select customer.cnum, salespeople.snum, salespeople.sname, orders.odate, max(orders.amt) innerjoin from customer, salespeople, orders
+    -> where orders.cnum = customer.cnum
+    -> and customer.snum = salespeople.snum
+    -> group by orders.odate, orders.cnum, salespeople.snum;
++------+------+---------+------------+-----------+
+| cnum | snum | sname   | odate      | innerjoin |
++------+------+---------+------------+-----------+
+| 2001 | 1001 | Peel    | 1996-03-10 |    767.19 |
+| 2003 | 1002 | Serres  | 1996-03-10 |   5160.45 |
+| 2007 | 1004 | Motika  | 1996-03-10 |   1900.10 |
+| 2008 | 1007 | Rifkin  | 1996-03-10 |   1098.16 |
+| 2002 | 1003 | AxelRod | 1996-04-10 |   1713.23 |
+| 2006 | 1001 | Peel    | 1996-05-10 |   4723.00 |
+| 2004 | 1002 | Serres  | 1996-06-10 |   1309.95 |
+| 2006 | 1001 | Peel    | 1996-06-10 |   9891.88 |
++------+------+---------+------------+-----------+
+8 rows in set (0.30 sec)
+
+5 ques:
+
+mysql> select * from orders order by cnum desc;
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3001 |   18.69 | 1996-03-10 | 2008 |
+| 3006 | 1098.16 | 1996-03-10 | 2008 |
+| 3002 | 1900.10 | 1996-03-10 | 2007 |
+| 3008 | 4723.00 | 1996-05-10 | 2006 |
+| 3011 | 9891.88 | 1996-06-10 | 2006 |
+| 3010 | 1309.95 | 1996-06-10 | 2004 |
+| 3005 | 5160.45 | 1996-03-10 | 2003 |
+| 3007 |   75.75 | 1996-04-10 | 2002 |
+| 3009 | 1713.23 | 1996-04-10 | 2002 |
+| 3003 |  767.19 | 1996-03-10 | 2001 |
++------+---------+------------+------+
+10 rows in set (0.01 sec)
+
+6 ques:
+
+mysql> select c.sname from orders a, customer b, salespeople c where a.cnum = b.cnum and b.snum = c.snum;
++---------+
+| sname   |
++---------+
+| Peel    |
+| Peel    |
+| Peel    |
+| Serres  |
+| Serres  |
+| AxelRod |
+| AxelRod |
+| Motika  |
+| Rifkin  |
+| Rifkin  |
++---------+
+10 rows in set (0.00 sec)
+
+mysql> select distinct(c.sname) from orders a, customer b, salespeople c where a.cnum = b.cnum and b.snum = c.snum;
++---------+
+| sname   |
++---------+
+| Peel    |
+| Serres  |
+| AxelRod |
+| Motika  |
+| Rifkin  |
++---------+
+5 rows in set (0.00 sec)
+
+7 ques
+
+mysql> select c.sname, b.cname from  customer b, salespeople c where b.snum = c.snum;
++---------+----------+
+| sname   | cname    |
++---------+----------+
+| Peel    | Hofman   |
+| AxelRod | Giovanni |
+| Serres  | Liu      |
+| Serres  | Grass    |
+| Peel    | Clemens  |
+| Motika  | Pereira  |
+| Rifkin  | Cisneros |
++---------+----------+
+7 rows in set (0.02 sec)
+
+12 ques:
+
+mysql> select a.sname, max(b.amt), b.odate from salespeople a, orders b, customer c where a.snum = c.snum and c.cnum = b.cnum group by a.sname;
++---------+------------+------------+
+| sname   | max(b.amt) | odate      |
++---------+------------+------------+
+| AxelRod |    1713.23 | 1996-04-10 |
+| Motika  |    1900.10 | 1996-03-10 |
+| Peel    |    9891.88 | 1996-03-10 |
+| Rifkin  |    1098.16 | 1996-03-10 |
+| Serres  |    5160.45 | 1996-03-10 |
++---------+------------+------------+
+5 rows in set (0.00 sec)
+
+9 ques:
+
+mysql> select count(a.onum), b.sname, b.snum from orders a, salespeople b, customer c where a.cnum = c.cnum and
+    -> b.snum = c.snum group by b.snum;
++---------------+---------+------+
+| count(a.onum) | sname   | snum |
++---------------+---------+------+
+|             3 | Peel    | 1001 |
+|             2 | Serres  | 1002 |
+|             2 | AxelRod | 1003 |
+|             1 | Motika  | 1004 |
+|             2 | Rifkin  | 1007 |
++---------------+---------+------+
+5 rows in set (0.00 sec)
+
+mysql> select count(a.amt), b.sname, b.snum from orders a, salespeople b, customer c where a.cnum = c.cnum and
+    -> b.snum = c.snum group by b.snum order by amt desc;
++--------------+---------+------+
+| count(a.amt) | sname   | snum |
++--------------+---------+------+
+|            2 | Serres  | 1002 |
+|            1 | Motika  | 1004 |
+|            3 | Peel    | 1001 |
+|            2 | AxelRod | 1003 |
+|            2 | Rifkin  | 1007 |
++--------------+---------+------+
+5 rows in set (0.00 sec)
+
+mysql> select count(a.onum) as order, b.sname, b.snum from orders a, salespeople b, customer c where a.cnum = c.cnum and
+    -> b.snum = c.snum group by b.snum order by order desc;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'order, b.sname, b.snum from orders a, salespeople b, customer c where a.cnum = c' at line 1
+mysql> select count(a.onum) as 'order', b.sname, b.snum from orders a, salespeople b, customer c where a.cnum = c.cnum and
+    -> b.snum = c.snum group by b.snum order by 'order' desc;
++-------+---------+------+
+| order | sname   | snum |
++-------+---------+------+
+|     3 | Peel    | 1001 |
+|     2 | Serres  | 1002 |
+|     2 | AxelRod | 1003 |
+|     1 | Motika  | 1004 |
+|     2 | Rifkin  | 1007 |
++-------+---------+------+
+5 rows in set (0.00 sec)
+
+mysql> select count(a.onum) as 'order', b.sname, b.snum from orders a, salespeople b, customer c where a.cnum = c.cnum and
+    -> b.snum = c.snum group by b.snum order by 'order';
++-------+---------+------+
+| order | sname   | snum |
++-------+---------+------+
+|     3 | Peel    | 1001 |
+|     2 | Serres  | 1002 |
+|     2 | AxelRod | 1003 |
+|     1 | Motika  | 1004 |
+|     2 | Rifkin  | 1007 |
++-------+---------+------+
+5 rows in set (0.00 sec)
+
+mysql> select count(a.onum) as 'quant', b.sname, b.snum from orders a, salespeople b, customer c where a.cnum = c.cnum and
+    -> b.snum = c.snum group by b.snum order by quant desc;
++-------+---------+------+
+| quant | sname   | snum |
++-------+---------+------+
+|     3 | Peel    | 1001 |
+|     2 | Serres  | 1002 |
+|     2 | Rifkin  | 1007 |
+|     2 | AxelRod | 1003 |
+|     1 | Motika  | 1004 |
++-------+---------+------+
+5 rows in set (0.00 sec)
+
+8 ques:
+
+mysql> select a.snum, a.sname, count(b.snum) as kr from salespeople a, customer b where a.snum = b.snum group by snum having kr > 1;
++------+--------+----+
+| snum | sname  | kr |
++------+--------+----+
+| 1001 | Peel   |  2 |
+| 1002 | Serres |  2 |
++------+--------+----+
+2 rows in set (0.00 sec)
+
+17 ques:
+
+mysql> select sum(amt) as total, odate from orders group by odate having (total - max(amt)) > 2000;
++---------+------------+
+| total   | odate      |
++---------+------------+
+| 8944.59 | 1996-03-10 |
++---------+------------+
+1 row in set (0.08 sec)
+
+mysql> select sum(amt) as total, odate from orders group by odate;
++----------+------------+
+| total    | odate      |
++----------+------------+
+|  8944.59 | 1996-03-10 |
+|  1788.98 | 1996-04-10 |
+|  4723.00 | 1996-05-10 |
+| 11201.83 | 1996-06-10 |
++----------+------------+
+4 rows in set (0.00 sec)
+
+mysql> select sum(amt) as total, odate, max(amt) from orders group by odate having (total - max(amt)) > 2000;
++---------+------------+----------+
+| total   | odate      | max(amt) |
++---------+------------+----------+
+| 8944.59 | 1996-03-10 |  5160.45 |
++---------+------------+----------+
+1 row in set (0.00 sec)
+
+mysql> select sum(amt) as total, odate, max(amt) from orders group by odate;
++----------+------------+----------+
+| total    | odate      | max(amt) |
++----------+------------+----------+
+|  8944.59 | 1996-03-10 |  5160.45 |
+|  1788.98 | 1996-04-10 |  1713.23 |
+|  4723.00 | 1996-05-10 |  4723.00 |
+| 11201.83 | 1996-06-10 |  9891.88 |
++----------+------------+----------+
+4 rows in set (0.00 sec)
+10 ques:
+mysql> select * from customer where (select count(city) as sim from customer where city = 'San Jose') > 1;
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2001 | Hofman   | London   |    100 | 1001 |
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2006 | Clemens  | London   |    100 | 1001 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+7 rows in set (0.00 sec)
+
+21 ques:
+
+mysql> select * from customer where cnum >(select (snum+1000) from salespeople where sname = 'Serres');
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2006 | Clemens  | London   |    100 | 1001 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+5 rows in set (0.00 sec)
+
+13 ques:
+
+mysql> select cname from customer where city = 'San Jose' and rating > 200;
++----------+
+| cname    |
++----------+
+| Cisneros |
++----------+
+1 row in set (0.00 sec)
+
+mysql> select cname, rating, city from customer where city = 'San Jose' and rating > 200;
++----------+--------+----------+
+| cname    | rating | city     |
++----------+--------+----------+
+| Cisneros |    300 | San Jose |
++----------+--------+----------+
+1 row in set (0.00 sec)
+
+14 ques:
+
+mysql> select sname, com from salespeople where city = 'London';
++--------+------+
+| sname  | com  |
++--------+------+
+| Peel   | 0.12 |
+| Motika | 0.11 |
+| Fran   | 0.26 |
++--------+------+
+3 rows in set (0.00 sec)
+
+15 ques:
+
+mysql> select a.onum,b.snum,c.sname from orders a, customer b, salespeople c where a.cnum = b.cnum and b.snum = c.snum and c.sname = 'Motika';
++------+------+--------+
+| onum | snum | sname  |
++------+------+--------+
+| 3002 | 1004 | Motika |
++------+------+--------+
+1 row in set (0.00 sec)
+
+16 ques:
+
+mysql> select a.cname, b.odate from customer a, orders b where a.cnum = b.cnum and b.odate = '1996-10-03';
++----------+------------+
+| cname    | odate      |
++----------+------------+
+| Cisneros | 1996-10-03 |
+| Pereira  | 1996-10-03 |
+| Hofman   | 1996-10-03 |
+| Liu      | 1996-10-03 |
+| Cisneros | 1996-10-03 |
++----------+------------+
+5 rows in set (0.00 sec)
+
+18 ques:
+
+mysql> select onum,amt from orders where (select min(amt) from orders where odate = '1996-10-06') < amt and odate != '1996-10-06';
++------+---------+
+| onum | amt     |
++------+---------+
+| 3002 | 1900.10 |
+| 3005 | 5160.45 |
+| 3008 | 4723.00 |
+| 3009 | 1713.23 |
++------+---------+
+4 rows in set (0.00 sec)
+
+19 ques:
+
+mysql> select sname, a.snum from salespeople a, customer b where exists(select snum from customer where rating = 300 and a.snum = b.snum) and a.snum = b.snum and rating = 300;
++--------+------+
+| sname  | snum |
++--------+------+
+| Serres | 1002 |
+| Rifkin | 1007 |
++--------+------+
+2 rows in set (0.00 sec)
+
+20 ques:
+
+mysql> select a.cname, b.cname, a.rating from customer a, customer b where a.rating = b.rating and a.cnum != b.cnum and a.cnum < b.cnum order by rating;
++----------+----------+--------+
+| cname    | cname    | rating |
++----------+----------+--------+
+| Hofman   | Clemens  |    100 |
+| Hofman   | Pereira  |    100 |
+| Clemens  | Pereira  |    100 |
+| Giovanni | Liu      |    200 |
+| Grass    | Cisneros |    300 |
++----------+----------+--------+
+5 rows in set (0.00 sec)
+
+22 ques:
+
+mysql> select sname, (com * 100) as 'comm %' from salespeople;
++---------+--------+
+| sname   | comm % |
++---------+--------+
+| Peel    |  12.00 |
+| Serres  |  13.00 |
+| AxelRod |  10.00 |
+| Motika  |  11.00 |
+| Fran    |  26.00 |
+| Rifkin  |  15.00 |
++---------+--------+
+6 rows in set (0.00 sec)
+
+23 ques:
+
+mysql> select a.sname, b.odate, max(amt) from salespeople a, orders b, customer c where a.snum = c.snum and b.cnum = c.cnum group by a.sname, b.odate having max(amt) > 3000;
++--------+------------+----------+
+| sname  | odate      | max(amt) |
++--------+------------+----------+
+| Peel   | 1996-10-05 |  4723.00 |
+| Peel   | 1996-10-06 |  9891.88 |
+| Serres | 1996-10-03 |  5160.45 |
++--------+------------+----------+
+3 rows in set (0.00 sec)
+
+24 ques:
+
+mysql> select a.sname, max(amt), odate from salespeople a, orders b, customer c where a.snum = c.snum and c.cnum = b.cnum and odate = '1996-10-03'group by a.sname;
++--------+----------+------------+
+| sname  | max(amt) | odate      |
++--------+----------+------------+
+| Motika |  1900.10 | 1996-10-03 |
+| Peel   |   767.19 | 1996-10-03 |
+| Rifkin |  1098.16 | 1996-10-03 |
+| Serres |  5160.45 | 1996-10-03 |
++--------+----------+------------+
+4 rows in set (0.00 sec)
+
+25 ques:
+
+mysql> select a.cname, a.city, b.sname from customer a, salespeople b where a.snum = 1002 and a.snum = b.snum;
++-------+----------+--------+
+| cname | city     | sname  |
++-------+----------+--------+
+| Liu   | San Jose | Serres |
+| Grass | Berlin   | Serres |
++-------+----------+--------+
+2 rows in set (0.00 sec)
+
+
+26 ques:
+
+mysql> select cname, rating from customer where rating > 200;
++----------+--------+
+| cname    | rating |
++----------+--------+
+| Grass    |    300 |
+| Cisneros |    300 |
++----------+--------+
+2 rows in set (0.00 sec)
+
+27 ques:
+
+mysql> select count(distinct a.snum) from salespeople a, orders b, customer c where a.snum = c.snum and b.cnum = c.cnum and a.snum in (select snum from customer where cnum in (select distinct cnum from orders));
++------------------------+
+| count(distinct a.snum) |
++------------------------+
+|                      5 |
++------------------------+
+1 row in set (0.07 sec)
+
+28 ques:
+
+mysql> select a.cname, b.com from customer a, salespeople b where a.snum = b.snum and b.com > 0.12;
++----------+------+
+| cname    | com  |
++----------+------+
+| Liu      | 0.13 |
+| Grass    | 0.13 |
+| Cisneros | 0.15 |
++----------+------+
+3 rows in set (0.00 sec)
+
+29 ques:
+
+mysql> select sname, snum from salespeople where snum in (select a.snum from customer a, customer b where a.cnum != b.cnum and a.snum = b.snum and a.cnum < b.cnum);
++--------+------+
+| sname  | snum |
++--------+------+
+| Peel   | 1001 |
+| Serres | 1002 |
++--------+------+
+2 rows in set (0.00 sec)
+
+30 ques:
+
+mysql> select sname, cname, a.city from salespeople a, customer b where a.snum = b.snum and a.city = b.city;
++--------+---------+----------+
+| sname  | cname   | city     |
++--------+---------+----------+
+| Peel   | Hofman  | London   |
+| Serres | Liu     | San Jose |
+| Peel   | Clemens | London   |
++--------+---------+----------+
+3 rows in set (0.00 sec)
+
+mysql> select sname, cname, a.city from salespeople a, customer b where a.city = b.city;
++--------+----------+----------+
+| sname  | cname    | city     |
++--------+----------+----------+
+| Peel   | Hofman   | London   |
+| Motika | Hofman   | London   |
+| Fran   | Hofman   | London   |
+| Serres | Liu      | San Jose |
+| Peel   | Clemens  | London   |
+| Motika | Clemens  | London   |
+| Fran   | Clemens  | London   |
+| Serres | Cisneros | San Jose |
++--------+----------+----------+
+8 rows in set (0.00 sec)
+
+31 ques:
+
+mysql> select lower(sname) from salespeople where sname like 'P__l%';
++--------------+
+| lower(sname) |
++--------------+
+| peel         |
++--------------+
+1 row in set (0.11 sec)
+
+32 ques:
+
+mysql> select onum, amt from orders where cnum = (select cnum from customer where cname = 'Cisneros');
++------+---------+
+| onum | amt     |
++------+---------+
+| 3001 |   18.69 |
+| 3006 | 1098.16 |
++------+---------+
+2 rows in set (0.00 sec)
+
+34 ques:
+
+mysql> select snum, sname, com, city from salespeople;
++------+---------+------+-----------+
+| snum | sname   | com  | city      |
++------+---------+------+-----------+
+| 1001 | Peel    | 0.12 | London    |
+| 1002 | Serres  | 0.13 | San Jose  |
+| 1003 | AxelRod | 0.10 | New York  |
+| 1004 | Motika  | 0.11 | London    |
+| 1005 | Fran    | 0.26 | London    |
+| 1007 | Rifkin  | 0.15 | Barcelona |
++------+---------+------+-----------+
+6 rows in set (0.00 sec)
+
+35 ques:
+
+mysql> select cname from customer where cname between 'A' and 'G' ;
++----------+
+| cname    |
++----------+
+| Clemens  |
+| Cisneros |
++----------+
+2 rows in set (0.08 sec)
+
+36 ques:
+
+mysql> select a.cname, a.city, a.rating, a.snum, com, sname, odate, onum, a.cnum from customer a, salespeople b, orders c where a.snum = b.snum and a.cnum = c.cnum;
++----------+----------+--------+------+------+---------+------------+------+------+
+| cname    | city     | rating | snum | com  | sname   | odate      | onum | cnum |
++----------+----------+--------+------+------+---------+------------+------+------+
+| Hofman   | London   |    100 | 1001 | 0.12 | Peel    | 1996-10-03 | 3003 | 2001 |
+| Giovanni | Rome     |    200 | 1003 | 0.10 | AxelRod | 1996-10-04 | 3007 | 2002 |
+| Giovanni | Rome     |    200 | 1003 | 0.10 | AxelRod | 1996-10-04 | 3009 | 2002 |
+| Liu      | San Jose |    200 | 1002 | 0.13 | Serres  | 1996-10-03 | 3005 | 2003 |
+| Grass    | Berlin   |    300 | 1002 | 0.13 | Serres  | 1996-10-06 | 3010 | 2004 |
+| Clemens  | London   |    100 | 1001 | 0.12 | Peel    | 1996-10-05 | 3008 | 2006 |
+| Clemens  | London   |    100 | 1001 | 0.12 | Peel    | 1996-10-06 | 3011 | 2006 |
+| Pereira  | Rome     |    100 | 1004 | 0.11 | Motika  | 1996-10-03 | 3002 | 2007 |
+| Cisneros | San Jose |    300 | 1007 | 0.15 | Rifkin  | 1996-10-03 | 3001 | 2008 |
+| Cisneros | San Jose |    300 | 1007 | 0.15 | Rifkin  | 1996-10-03 | 3006 | 2008 |
++----------+----------+--------+------+------+---------+------------+------+------+
+10 rows in set (0.00 sec)
+
+mysql> select * from salespeople a, customer b, orders c;
++------+---------+-----------+------+------+----------+----------+--------+------+------+---------+------------+------+
+| snum | sname   | city      | com  | cnum | cname    | city     | rating | snum | onum | amt     | odate      | cnum |
++------+---------+-----------+------+------+----------+----------+--------+------+------+---------+------------+------+
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3001 |   18.69 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3003 |  767.19 | 1996-10-03 | 2001 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3007 |   75.75 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 | 3011 | 9891.88 | 1996-10-06 | 2006 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 | 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+-----------+------+------+----------+----------+--------+------+------+---------+------------+------+
+420 rows in set (0.00 sec)
+
+mysql> select * from salespeople a, customer b;
++------+---------+-----------+------+------+----------+----------+--------+------+
+| snum | sname   | city      | com  | cnum | cname    | city     | rating | snum |
++------+---------+-----------+------+------+----------+----------+--------+------+
+| 1001 | Peel    | London    | 0.12 | 2001 | Hofman   | London   |    100 | 1001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2001 | Hofman   | London   |    100 | 1001 |
+| 1003 | AxelRod | New York  | 0.10 | 2001 | Hofman   | London   |    100 | 1001 |
+| 1004 | Motika  | London    | 0.11 | 2001 | Hofman   | London   |    100 | 1001 |
+| 1005 | Fran    | London    | 0.26 | 2001 | Hofman   | London   |    100 | 1001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2001 | Hofman   | London   |    100 | 1001 |
+| 1001 | Peel    | London    | 0.12 | 2002 | Giovanni | Rome     |    200 | 1003 |
+| 1002 | Serres  | San Jose  | 0.13 | 2002 | Giovanni | Rome     |    200 | 1003 |
+| 1003 | AxelRod | New York  | 0.10 | 2002 | Giovanni | Rome     |    200 | 1003 |
+| 1004 | Motika  | London    | 0.11 | 2002 | Giovanni | Rome     |    200 | 1003 |
+| 1005 | Fran    | London    | 0.26 | 2002 | Giovanni | Rome     |    200 | 1003 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2002 | Giovanni | Rome     |    200 | 1003 |
+| 1001 | Peel    | London    | 0.12 | 2003 | Liu      | San Jose |    200 | 1002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2003 | Liu      | San Jose |    200 | 1002 |
+| 1003 | AxelRod | New York  | 0.10 | 2003 | Liu      | San Jose |    200 | 1002 |
+| 1004 | Motika  | London    | 0.11 | 2003 | Liu      | San Jose |    200 | 1002 |
+| 1005 | Fran    | London    | 0.26 | 2003 | Liu      | San Jose |    200 | 1002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2003 | Liu      | San Jose |    200 | 1002 |
+| 1001 | Peel    | London    | 0.12 | 2004 | Grass    | Berlin   |    300 | 1002 |
+| 1002 | Serres  | San Jose  | 0.13 | 2004 | Grass    | Berlin   |    300 | 1002 |
+| 1003 | AxelRod | New York  | 0.10 | 2004 | Grass    | Berlin   |    300 | 1002 |
+| 1004 | Motika  | London    | 0.11 | 2004 | Grass    | Berlin   |    300 | 1002 |
+| 1005 | Fran    | London    | 0.26 | 2004 | Grass    | Berlin   |    300 | 1002 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2004 | Grass    | Berlin   |    300 | 1002 |
+| 1001 | Peel    | London    | 0.12 | 2006 | Clemens  | London   |    100 | 1001 |
+| 1002 | Serres  | San Jose  | 0.13 | 2006 | Clemens  | London   |    100 | 1001 |
+| 1003 | AxelRod | New York  | 0.10 | 2006 | Clemens  | London   |    100 | 1001 |
+| 1004 | Motika  | London    | 0.11 | 2006 | Clemens  | London   |    100 | 1001 |
+| 1005 | Fran    | London    | 0.26 | 2006 | Clemens  | London   |    100 | 1001 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2006 | Clemens  | London   |    100 | 1001 |
+| 1001 | Peel    | London    | 0.12 | 2007 | Pereira  | Rome     |    100 | 1004 |
+| 1002 | Serres  | San Jose  | 0.13 | 2007 | Pereira  | Rome     |    100 | 1004 |
+| 1003 | AxelRod | New York  | 0.10 | 2007 | Pereira  | Rome     |    100 | 1004 |
+| 1004 | Motika  | London    | 0.11 | 2007 | Pereira  | Rome     |    100 | 1004 |
+| 1005 | Fran    | London    | 0.26 | 2007 | Pereira  | Rome     |    100 | 1004 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2007 | Pereira  | Rome     |    100 | 1004 |
+| 1001 | Peel    | London    | 0.12 | 2008 | Cisneros | San Jose |    300 | 1007 |
+| 1002 | Serres  | San Jose  | 0.13 | 2008 | Cisneros | San Jose |    300 | 1007 |
+| 1003 | AxelRod | New York  | 0.10 | 2008 | Cisneros | San Jose |    300 | 1007 |
+| 1004 | Motika  | London    | 0.11 | 2008 | Cisneros | San Jose |    300 | 1007 |
+| 1005 | Fran    | London    | 0.26 | 2008 | Cisneros | San Jose |    300 | 1007 |
+| 1007 | Rifkin  | Barcelona | 0.15 | 2008 | Cisneros | San Jose |    300 | 1007 |
++------+---------+-----------+------+------+----------+----------+--------+------+
+42 rows in set (0.00 sec)
+
+37 ques:
+
+mysql> select * from orders where amt > (select avg(amt) from orders where odate = '1996-10-04');
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+------------+------+
+7 rows in set (0.00 sec)
+
+39 ques:
+
+mysql> select sum(amt) as total, odate from orders group by odate order by total desc;
++----------+------------+
+| total    | odate      |
++----------+------------+
+| 11201.83 | 1996-10-06 |
+|  8944.59 | 1996-10-03 |
+|  4723.00 | 1996-10-05 |
+|  1788.98 | 1996-10-04 |
++----------+------------+
+4 rows in set (0.00 sec)
+
+41 ques:
+
+mysql> select * from orders where amt >(select max(amt) from orders where cnum in (select cnum from customer where city = 'San Jose'));
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+------------+------+
+1 row in set (0.00 sec)
+
+42 ques:
+
+mysql> select * from orders where cnum in (select cnum from orders where amt > (select avg(amt) from orders));
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+------------+------+
+3 rows in set (0.00 sec)
+
+43 ques:
+
+mysql> select city, max(rating) from customer group by city;
++----------+-------------+
+| city     | max(rating) |
++----------+-------------+
+| Berlin   |         300 |
+| London   |         100 |
+| Rome     |         200 |
+| San Jose |         300 |
++----------+-------------+
+4 rows in set (0.00 sec)
+
+44 ques:
+
+mysql> select a.com, b.amt, c.rating, (a.com * b.amt) as com_amt from salespeople a, orders b, customer c where a.snum = c.snum and b.cnum = c.cnum and c.rating > 100;
++------+---------+--------+----------+
+| com  | amt     | rating | com_amt  |
++------+---------+--------+----------+
+| 0.10 |   75.75 |    200 |   7.5750 |
+| 0.10 | 1713.23 |    200 | 171.3230 |
+| 0.13 | 5160.45 |    200 | 670.8585 |
+| 0.13 | 1309.95 |    300 | 170.2935 |
+| 0.15 |   18.69 |    300 |   2.8035 |
+| 0.15 | 1098.16 |    300 | 164.7240 |
++------+---------+--------+----------+
+6 rows in set (0.00 sec)
+
+45 ques:
+
+mysql> select count(cnum) from customer where rating > (select avg(rating) from customer where city = 'San Jose');
++-------------+
+| count(cnum) |
++-------------+
+|           2 |
++-------------+
+1 row in set (0.00 sec)
+
+46 ques:
+
+mysql> select a.sname, b.sname from salespeople a, salespeople b order by a.sname desc;
++---------+---------+
+| sname   | sname   |
++---------+---------+
+| Serres  | Motika  |
+| Serres  | Peel    |
+| Serres  | Fran    |
+| Serres  | Serres  |
+| Serres  | Rifkin  |
+| Serres  | AxelRod |
+| Rifkin  | Peel    |
+| Rifkin  | Fran    |
+| Rifkin  | Serres  |
+| Rifkin  | AxelRod |
+| Rifkin  | Rifkin  |
+| Rifkin  | Motika  |
+| Peel    | AxelRod |
+| Peel    | Motika  |
+| Peel    | Peel    |
+| Peel    | Fran    |
+| Peel    | Serres  |
+| Peel    | Rifkin  |
+| Motika  | Rifkin  |
+| Motika  | AxelRod |
+| Motika  | Motika  |
+| Motika  | Peel    |
+| Motika  | Fran    |
+| Motika  | Serres  |
+| Fran    | Rifkin  |
+| Fran    | Motika  |
+| Fran    | Peel    |
+| Fran    | Fran    |
+| Fran    | Serres  |
+| Fran    | AxelRod |
+| AxelRod | Fran    |
+| AxelRod | Serres  |
+| AxelRod | Rifkin  |
+| AxelRod | AxelRod |
+| AxelRod | Motika  |
+| AxelRod | Peel    |
++---------+---------+
+36 rows in set (0.08 sec)
+
+47 ques:
+
+mysql> select snum, sname,city from salespeople where city = 'London' or city = 'Barcelona';
++------+--------+-----------+
+| snum | sname  | city      |
++------+--------+-----------+
+| 1001 | Peel   | London    |
+| 1004 | Motika | London    |
+| 1005 | Fran   | London    |
+| 1007 | Rifkin | Barcelona |
++------+--------+-----------+
+4 rows in set (0.00 sec)
+
+48 ques:
+mysql> select sname, snum from salespeople where snum in (select snum from customer group by snum having count(snum) = 1);
++---------+------+
+| sname   | snum |
++---------+------+
+| AxelRod | 1003 |
+| Motika  | 1004 |
+| Rifkin  | 1007 |
++---------+------+
+3 rows in set (0.00 sec)
+
+49 ques:
+
+mysql> select a.cname, b.cname from customer a, customer b where a.cnum in (select cnum from customer group by snum having count(snum) = 1) and b.cnum in (select cnum from customer group by snum having count(snum) = 1) and a.cnum != b.cnum and a.cnum < b.cnum;
++----------+----------+
+| cname    | cname    |
++----------+----------+
+| Giovanni | Pereira  |
+| Giovanni | Cisneros |
+| Pereira  | Cisneros |
++----------+----------+
+3 rows in set (0.00 sec)
+
+50 ques:
+
+mysql> select * from orders where amt > 1000.00;
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+------------+------+
+7 rows in set (0.00 sec)
+
+51 ques:
+
+mysql> select onum, cname from orders a, customer b where a.cnum = b.cnum;
++------+----------+
+| onum | cname    |
++------+----------+
+| 3003 | Hofman   |
+| 3007 | Giovanni |
+| 3009 | Giovanni |
+| 3005 | Liu      |
+| 3010 | Grass    |
+| 3008 | Clemens  |
+| 3011 | Clemens  |
+| 3002 | Pereira  |
+| 3001 | Cisneros |
+| 3006 | Cisneros |
++------+----------+
+10 rows in set (0.00 sec)
+
+52 ques:
+
+mysql> select a.snum, cname, a.city from salespeople a, customer b where a.city = b.city and a.snum != b.snum;
++------+----------+----------+
+| snum | cname    | city     |
++------+----------+----------+
+| 1004 | Hofman   | London   |
+| 1005 | Hofman   | London   |
+| 1004 | Clemens  | London   |
+| 1005 | Clemens  | London   |
+| 1002 | Cisneros | San Jose |
++------+----------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select sname,cname,a.city from salespeople a, customer b where b.snum in(select b.snum from customer b, salespeople a where a.city = b.city and a.snum != b.snum) and a.snum != b.snum and a.city = b.city;
++--------+----------+----------+
+| sname  | cname    | city     |
++--------+----------+----------+
+| Motika | Hofman   | London   |
+| Fran   | Hofman   | London   |
+| Motika | Clemens  | London   |
+| Fran   | Clemens  | London   |
+| Serres | Cisneros | San Jose |
++--------+----------+----------+
+5 rows in set (0.00 sec)
+
+53 ques:
+
+mysql> select * from customer where rating = any(select rating from salespeople a, customer b where a.sname = 'Serres' and a.snum = b.snum);
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+4 rows in set (0.07 sec)
+
+54 ques:
+
+mysql> select * from orders where onum =any (select onum from orders where odate = '1996-10-03' or odate = '1996-10-04');
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3001 |   18.69 | 1996-10-03 | 2008 |
+| 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 3003 |  767.19 | 1996-10-03 | 2001 |
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 3007 |   75.75 | 1996-10-04 | 2002 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 |
++------+---------+------------+------+
+7 rows in set (0.00 sec)
+
+mysql> select onum,odate from orders where odate = '1996-10-03' or odate = '1996-10-04';
++------+------------+
+| onum | odate      |
++------+------------+
+| 3001 | 1996-10-03 |
+| 3002 | 1996-10-03 |
+| 3003 | 1996-10-03 |
+| 3005 | 1996-10-03 |
+| 3006 | 1996-10-03 |
+| 3007 | 1996-10-04 |
+| 3009 | 1996-10-04 |
++------+------------+
+7 rows in set (0.00 sec)
+
+mysql> select * from orders where onum in (select onum from orders where odate = '1996-10-03' or odate = '1996-10-04');
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3001 |   18.69 | 1996-10-03 | 2008 |
+| 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 3003 |  767.19 | 1996-10-03 | 2001 |
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 3007 |   75.75 | 1996-10-04 | 2002 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 |
++------+---------+------------+------+
+7 rows in set (0.00 sec)
+
+55 ques:
+
+mysql> select a.onum, b.onum, c.cname from orders a, orders b, customer c where a.cnum = b.cnum and a.onum != b.onum and a.onum < b.onum and a.cnum = c.cnum and b.cnum = c.cnum;
++------+------+----------+
+| onum | onum | cname    |
++------+------+----------+
+| 3007 | 3009 | Giovanni |
+| 3008 | 3011 | Clemens  |
+| 3001 | 3006 | Cisneros |
++------+------+----------+
+3 rows in set (0.00 sec)
+
+56 ques:
+
+mysql> select * from customer where rating > (select max(rating) from customer where city = 'Rome');
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+2 rows in set (0.00 sec)
+
+mysql> select * from customer where rating > any (select rating from customer where city = 'Rome');
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+4 rows in set (0.00 sec)
+
+57 ques:
+
+mysql> select * from customer where cnum in (select cnum from customer where rating > 100 or city = 'Rome');
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+5 rows in set (0.00 sec)
+
+mysql> select * from customer where cnum = any (select cnum from customer where rating > 100 or city = 'Rome');
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
++------+----------+----------+--------+------+
+5 rows in set (0.00 sec)
+
+58 ques:
+
+mysql> select * from customer where snum = 1001;
++------+---------+--------+--------+------+
+| cnum | cname   | city   | rating | snum |
++------+---------+--------+--------+------+
+| 2001 | Hofman  | London |    100 | 1001 |
+| 2006 | Clemens | London |    100 | 1001 |
++------+---------+--------+--------+------+
+2 rows in set (0.00 sec)
+
+59 ques:
+
+mysql> select a.snum, a.sname, sum(amt) as total from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum group by a.sname having total > (select max(amt) from orders);
++------+-------+----------+
+| snum | sname | total    |
++------+-------+----------+
+| 1001 | Peel  | 15382.07 |
++------+-------+----------+
+1 row in set (0.00 sec)
+
+60 ques:
+
+mysql> create table orders1(select * from orders);
+Query OK, 10 rows affected (0.37 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> select * from orders1;
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3001 |   18.69 | 1996-10-03 | 2008 |
+| 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 3003 |  767.19 | 1996-10-03 | 2001 |
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 3007 |   75.75 | 1996-10-04 | 2002 |
+| 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+------------+------+
+10 rows in set (0.00 sec)
+
+mysql> update orders1 set amt = 'null';
+ERROR 1366 (HY000): Incorrect decimal value: 'null' for column 'amt' at row 1
+mysql> update orders1 set amt is null;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'is null' at line 1
+mysql> update orders1 set amt = 0000.00;
+Query OK, 10 rows affected (0.08 sec)
+Rows matched: 10  Changed: 10  Warnings: 0
+
+mysql> select * from orders1;
++------+------+------------+------+
+| onum | amt  | odate      | cnum |
++------+------+------------+------+
+| 3001 | 0.00 | 1996-10-03 | 2008 |
+| 3002 | 0.00 | 1996-10-03 | 2007 |
+| 3003 | 0.00 | 1996-10-03 | 2001 |
+| 3005 | 0.00 | 1996-10-03 | 2003 |
+| 3006 | 0.00 | 1996-10-03 | 2008 |
+| 3007 | 0.00 | 1996-10-04 | 2002 |
+| 3008 | 0.00 | 1996-10-05 | 2006 |
+| 3009 | 0.00 | 1996-10-04 | 2002 |
+| 3010 | 0.00 | 1996-10-06 | 2004 |
+| 3011 | 0.00 | 1996-10-06 | 2006 |
++------+------+------------+------+
+10 rows in set (0.00 sec)
+
+61 ques:
+
+mysql> select sname, cname, rating from salespeople a, customer b where sname < cname and rating < 200;
++---------+---------+--------+
+| sname   | cname   | rating |
++---------+---------+--------+
+| Peel    | Pereira |    100 |
+| AxelRod | Hofman  |    100 |
+| AxelRod | Clemens |    100 |
+| AxelRod | Pereira |    100 |
+| Motika  | Pereira |    100 |
+| Fran    | Hofman  |    100 |
+| Fran    | Pereira |    100 |
++---------+---------+--------+
+7 rows in set (0.00 sec)
+
+
+62 ques:
+
+mysql> select sname, com*amt from salespeople a, customer b, orders c where a.snum =b.snum and b.cnum = c.cnum;
++---------+-----------+
+| sname   | com*amt   |
++---------+-----------+
+| Peel    |   92.0628 |
+| Peel    |  566.7600 |
+| Peel    | 1187.0256 |
+| Serres  |  670.8585 |
+| Serres  |  170.2935 |
+| AxelRod |    7.5750 |
+| AxelRod |  171.3230 |
+| Motika  |  209.0110 |
+| Rifkin  |    2.8035 |
+| Rifkin  |  164.7240 |
++---------+-----------+
+10 rows in set (0.00 sec)
+
+63 ques:
+
+mysql> select cname, city from customer where rating = (select rating from customer where cnum = (select cnum from customer where cname = 'Hofman'));
++---------+--------+
+| cname   | city   |
++---------+--------+
+| Hofman  | London |
+| Clemens | London |
+| Pereira | Rome   |
++---------+--------+
+3 rows in set (0.00 sec)
+
+mysql> select cname, city from customer where rating = (select rating from customer where cnum = (select cnum from customer where cname = 'Hofman')) and cname != 'Hofman';
++---------+--------+
+| cname   | city   |
++---------+--------+
+| Clemens | London |
+| Pereira | Rome   |
++---------+--------+
+2 rows in set (0.00 sec)
+
+64 ques:
+
+mysql> select sname, cname from salespeople a, customer b where a.snum = b.snum and sname < cname;
++---------+----------+
+| sname   | cname    |
++---------+----------+
+| AxelRod | Giovanni |
+| Motika  | Pereira  |
++---------+----------+
+2 rows in set (0.00 sec)
+
+mysql> select sname, cname from salespeople a, customer b where a.snum = b.snum and sname > cname;
++--------+----------+
+| sname  | cname    |
++--------+----------+
+| Peel   | Hofman   |
+| Serres | Liu      |
+| Serres | Grass    |
+| Peel   | Clemens  |
+| Rifkin | Cisneros |
++--------+----------+
+5 rows in set (0.00 sec)
+
+65 ques:
+
+mysql> select cname, rating from customer where cnum in (select cnum from orders where amt > (select avg(amt) from orders));
++---------+--------+
+| cname   | rating |
++---------+--------+
+| Liu     |    200 |
+| Clemens |    100 |
++---------+--------+
+2 rows in set (0.00 sec)
+
+66 ques:
+
+mysql> select sum(amt) from orders;
++----------+
+| sum(amt) |
++----------+
+| 26658.40 |
++----------+
+1 row in set (0.00 sec)
+
+67 ques:
+
+mysql> select onum, amt, odate from orders;
++------+---------+------------+
+| onum | amt     | odate      |
++------+---------+------------+
+| 3001 |   18.69 | 1996-10-03 |
+| 3002 | 1900.10 | 1996-10-03 |
+| 3003 |  767.19 | 1996-10-03 |
+| 3005 | 5160.45 | 1996-10-03 |
+| 3006 | 1098.16 | 1996-10-03 |
+| 3007 |   75.75 | 1996-10-04 |
+| 3008 | 4723.00 | 1996-10-05 |
+| 3009 | 1713.23 | 1996-10-04 |
+| 3010 | 1309.95 | 1996-10-06 |
+| 3011 | 9891.88 | 1996-10-06 |
++------+---------+------------+
+10 rows in set (0.00 sec)
+
+68 ques:
+
+mysql> select count(rating) from customer where rating is not null;
++---------------+
+| count(rating) |
++---------------+
+|             7 |
++---------------+
+1 row in set (0.00 sec)
+
+
+69 ques:
+
+mysql> select onum, sname, cname from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum;
++------+---------+----------+
+| onum | sname   | cname    |
++------+---------+----------+
+| 3003 | Peel    | Hofman   |
+| 3007 | AxelRod | Giovanni |
+| 3009 | AxelRod | Giovanni |
+| 3005 | Serres  | Liu      |
+| 3010 | Serres  | Grass    |
+| 3008 | Peel    | Clemens  |
+| 3011 | Peel    | Clemens  |
+| 3002 | Motika  | Pereira  |
+| 3001 | Rifkin  | Cisneros |
+| 3006 | Rifkin  | Cisneros |
++------+---------+----------+
+10 rows in set (0.02 sec)
+
+70 ques:
+
+mysql> select sname, com from salespeople  where snum in (select snum from customer where city = 'London');
++-------+------+
+| sname | com  |
++-------+------+
+| Peel  | 0.12 |
++-------+------+
+1 row in set (0.00 sec)
+
+71 ques:
+
+mysql> select sname from salespeople where snum = any(select a.snum from salespeople a, customer b where a.snum = b.snum and a.city != b.city);
++---------+
+| sname   |
++---------+
+| AxelRod |
+| Serres  |
+| Motika  |
+| Rifkin  |
++---------+
+4 rows in set (0.00 sec)
+
+72 ques:
+
+mysql> select sname, cname, a.city, b.city from salespeople a, customer b where exists(select sname from salespeople a, customer b where a.snum != b.snum) and a.snum != b.snum and a.city = b.city;
++--------+----------+----------+----------+
+| sname  | cname    | city     | city     |
++--------+----------+----------+----------+
+| Motika | Hofman   | London   | London   |
+| Fran   | Hofman   | London   | London   |
+| Motika | Clemens  | London   | London   |
+| Fran   | Clemens  | London   | London   |
+| Serres | Cisneros | San Jose | San Jose |
++--------+----------+----------+----------+
+5 rows in set (0.00 sec)
+
+73 ques:
+
+mysql> select cname,sname from customer a, salespeople b where a.snum in (select snum from salespeople where sname = 'Peel' or sname = 'Motika') and a.snum = b.snum;
++---------+--------+
+| cname   | sname  |
++---------+--------+
+| Hofman  | Peel   |
+| Clemens | Peel   |
+| Pereira | Motika |
++---------+--------+
+3 rows in set (0.00 sec)
+
+74 ques:
+
+mysql> select count(distinct(a.snum)), c.odate from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum group by odate;
++-------------------------+------------+
+| count(distinct(a.snum)) | odate      |
++-------------------------+------------+
+|                       4 | 1996-10-03 |
+|                       1 | 1996-10-04 |
+|                       1 | 1996-10-05 |
+|                       2 | 1996-10-06 |
++-------------------------+------------+
+4 rows in set (0.00 sec)
+
+75 ques:
+
+mysql> select onum, odate from orders where cnum in (select cnum from customer where snum in (select snum from salespeople where city = 'London'));
++------+------------+
+| onum | odate      |
++------+------------+
+| 3003 | 1996-10-03 |
+| 3008 | 1996-10-05 |
+| 3011 | 1996-10-06 |
+| 3002 | 1996-10-03 |
++------+------------+
+4 rows in set (0.00 sec)
+
+mysql> select onum, odate, cnum from orders where cnum in (select cnum from customer where snum in (select snum from salespeople where city = 'London'));
++------+------------+------+
+| onum | odate      | cnum |
++------+------------+------+
+| 3003 | 1996-10-03 | 2001 |
+| 3008 | 1996-10-05 | 2006 |
+| 3011 | 1996-10-06 | 2006 |
+| 3002 | 1996-10-03 | 2007 |
++------+------------+------+
+4 rows in set (0.00 sec)
+
+76 ques:
+
+mysql> select onum,a.cnum,cname from orders a, customer b where a.cnum in (select cnum from customer a, salespeople b where a.snum = b.snum and a.city != b.city) and a.cnum = b.cnum;
++------+------+----------+
+| onum | cnum | cname    |
++------+------+----------+
+| 3007 | 2002 | Giovanni |
+| 3009 | 2002 | Giovanni |
+| 3010 | 2004 | Grass    |
+| 3002 | 2007 | Pereira  |
+| 3001 | 2008 | Cisneros |
+| 3006 | 2008 | Cisneros |
++------+------+----------+
+6 rows in set (0.00 sec)
+
+77 ques:
+
+mysql> select sname from salespeople a, customer b where b.cnum in (select cnum from orders group by cnum having count(cnum) > 1) and a.snum = b.snum;
++---------+
+| sname   |
++---------+
+| Peel    |
+| AxelRod |
+| Rifkin  |
++---------+
+3 rows in set (0.00 sec)
+
+78 ques:
+
+mysql> select sname,cname from salespeople a, customer b where a.snum in (select snum from customer group by snum having count(snum)>1) and a.snum = b.snum and b.cnum in (select cnum from orders);
++--------+---------+
+| sname  | cname   |
++--------+---------+
+| Peel   | Hofman  |
+| Peel   | Clemens |
+| Serres | Liu     |
+| Serres | Grass   |
++--------+---------+
+4 rows in set (0.00 sec)
+
+mysql> select sname,cname,b.cnum,a.snum from salespeople a, customer b where a.snum in (select snum from customer group by snum having count(snum)>1) and a.snum = b.snum and b.cnum in (select cnum from orders);
++--------+---------+------+------+
+| sname  | cname   | cnum | snum |
++--------+---------+------+------+
+| Peel   | Hofman  | 2001 | 1001 |
+| Peel   | Clemens | 2006 | 1001 |
+| Serres | Liu     | 2003 | 1002 |
+| Serres | Grass   | 2004 | 1002 |
++--------+---------+------+------+
+4 rows in set (0.00 sec)
+
+79 ques:
+mysql> select cname from customer where cname like 'C%';
++----------+
+| cname    |
++----------+
+| Clemens  |
+| Cisneros |
++----------+
+2 rows in set (0.00 sec)
+
+81 ques:
+
+mysql> select distinct(snum), sname from salespeople where snum in(select snum from customer where cnum in (select cnum from orders));
++------+---------+
+| snum | sname   |
++------+---------+
+| 1001 | Peel    |
+| 1002 | Serres  |
+| 1003 | AxelRod |
+| 1004 | Motika  |
+| 1007 | Rifkin  |
++------+---------+
+5 rows in set (0.00 sec)
+
+82 ques:
+
+mysql> select rating, cname, cnum from customer order by rating desc;
++--------+----------+------+
+| rating | cname    | cnum |
++--------+----------+------+
+|    300 | Grass    | 2004 |
+|    300 | Cisneros | 2008 |
+|    200 | Giovanni | 2002 |
+|    200 | Liu      | 2003 |
+|    100 | Hofman   | 2001 |
+|    100 | Clemens  | 2006 |
+|    100 | Pereira  | 2007 |
++--------+----------+------+
+7 rows in set (0.00 sec)
+
+83 ques:
+
+mysql> select avg(com) from salespeople group by city having city = 'London';
++----------+
+| avg(com) |
++----------+
+| 0.163333 |
++----------+
+1 row in set (0.00 sec)
+
+84 ques:
+
+mysql> select onum, sname, b.snum from orders a, customer b, salespeople c where a.cnum in (select cnum from customer b where b.snum = (select snum from salespeople a where a.snum = (select snum from customer where cname = 'Hofman'))) and a.cnum = b.cnum and b.snum = c.snum;
++------+-------+------+
+| onum | sname | snum |
++------+-------+------+
+| 3003 | Peel  | 1001 |
+| 3008 | Peel  | 1001 |
+| 3011 | Peel  | 1001 |
++------+-------+------+
+3 rows in set (0.00 sec)
+
+85 ques:
+mysql> select sname,com from salespeople where com between 0.10 and 0.12;
++---------+------+
+| sname   | com  |
++---------+------+
+| Peel    | 0.12 |
+| AxelRod | 0.10 |
+| Motika  | 0.11 |
++---------+------+
+3 rows in set (0.05 sec)
+
+86 ques:
+
+mysql> select sname, city from salespeople where city = 'London' and com > 0.10;
++--------+--------+
+| sname  | city   |
++--------+--------+
+| Peel   | London |
+| Motika | London |
+| Fran   | London |
++--------+--------+
+3 rows in set (0.00 sec)
+
+87 ques:
+
+mysql> select * from orders where (amt < 1000 or not (odate = 10/03/1996 and cnum > 2003));
++------+---------+------------+------+
+| onum | amt     | odate      | cnum |
++------+---------+------------+------+
+| 3001 |   18.69 | 1996-10-03 | 2008 |
+| 3002 | 1900.10 | 1996-10-03 | 2007 |
+| 3003 |  767.19 | 1996-10-03 | 2001 |
+| 3005 | 5160.45 | 1996-10-03 | 2003 |
+| 3006 | 1098.16 | 1996-10-03 | 2008 |
+| 3007 |   75.75 | 1996-10-04 | 2002 |
+| 3008 | 4723.00 | 1996-10-05 | 2006 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 |
+| 3010 | 1309.95 | 1996-10-06 | 2004 |
+| 3011 | 9891.88 | 1996-10-06 | 2006 |
++------+---------+------------+------+
+10 rows in set (0.00 sec)
+
+88 ques:
+
+mysql> select min(amt),cname,a.cnum from orders a, customer b where a.cnum = b.cnum group by a.cnum;
++----------+----------+------+
+| min(amt) | cname    | cnum |
++----------+----------+------+
+|   767.19 | Hofman   | 2001 |
+|    75.75 | Giovanni | 2002 |
+|  5160.45 | Liu      | 2003 |
+|  1309.95 | Grass    | 2004 |
+|  4723.00 | Clemens  | 2006 |
+|  1900.10 | Pereira  | 2007 |
+|    18.69 | Cisneros | 2008 |
++----------+----------+------+
+7 rows in set (0.00 sec)
+
+89 ques:
+
+mysql> select cname from customer where cname like 'G%' order by cname asc limit 1;
++----------+
+| cname    |
++----------+
+| Giovanni |
++----------+
+1 row in set (0.11 sec)
+
+90 ques:
+
+mysql> select city,count(city) from customer where city is not null group by city;
++----------+-------------+
+| city     | count(city) |
++----------+-------------+
+| Berlin   |           1 |
+| London   |           2 |
+| Rome     |           2 |
+| San Jose |           2 |
++----------+-------------+
+4 rows in set (0.00 sec)
+
+91 ques:
+
+mysql> select avg(amt) from orders;
++-------------+
+| avg(amt)    |
++-------------+
+| 2665.840000 |
++-------------+
+1 row in set (0.00 sec)
+
+92 ques:
+
+mysql> select * from orders where not (odate = 10/03/96 or snum > 1006) and amt >= 1500);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')' at line 1
+mysql> select * from orders where not (odate = 10/03/96 or snum > 1006) and amt >= 1500));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '))' at line 1
+mysql> select * from orders where not (odate = 10/03/96 or snum > 1006) and amt >= 1500;
+ERROR 1054 (42S22): Unknown column 'snum' in 'where clause'
+mysql>
+
+93 ques:
+
+mysql> select cname, rating, city from customer where not (city = 'San Jose') and rating > 200;
++-------+--------+--------+
+| cname | rating | city   |
++-------+--------+--------+
+| Grass |    300 | Berlin |
++-------+--------+--------+
+1 row in set (0.00 sec)
+
+94 ques:
+mysql> select * from salespeople;
++------+---------+-----------+------+
+| snum | sname   | city      | com  |
++------+---------+-----------+------+
+| 1001 | Peel    | London    | 0.12 |
+| 1002 | Serres  | San Jose  | 0.13 |
+| 1003 | AxelRod | New York  | 0.10 |
+| 1004 | Motika  | London    | 0.11 |
+| 1005 | Fran    | London    | 0.26 |
+| 1007 | Rifkin  | Barcelona | 0.15 |
++------+---------+-----------+------+
+6 rows in set (0.00 sec)
+
+mysql> select * from salespeople where com > 0.12 or com < 0.14;
++------+---------+-----------+------+
+| snum | sname   | city      | com  |
++------+---------+-----------+------+
+| 1001 | Peel    | London    | 0.12 |
+| 1002 | Serres  | San Jose  | 0.13 |
+| 1003 | AxelRod | New York  | 0.10 |
+| 1004 | Motika  | London    | 0.11 |
+| 1005 | Fran    | London    | 0.26 |
+| 1007 | Rifkin  | Barcelona | 0.15 |
++------+---------+-----------+------+
+6 rows in set (0.00 sec)
+
+95 ques:
+
+mysql> select * from orders where not ((odate = 10/03/96 and snum > 1002) or amt > 2000);
+ERROR 1054 (42S22): Unknown column 'snum' in 'where clause'
+
+mysql> select * from orders a, customer b where not ((odate = 10/03/96 and b.snum in (select snum from customer where snum > 1002)) or amt > 2000) and a.cnum = b.cnum;
++------+---------+------------+------+------+----------+----------+--------+------+
+| onum | amt     | odate      | cnum | cnum | cname    | city     | rating | snum |
++------+---------+------------+------+------+----------+----------+--------+------+
+| 3001 |   18.69 | 1996-10-03 | 2008 | 2008 | Cisneros | San Jose |    300 | 1007 |
+| 3002 | 1900.10 | 1996-10-03 | 2007 | 2007 | Pereira  | Rome     |    100 | 1004 |
+| 3003 |  767.19 | 1996-10-03 | 2001 | 2001 | Hofman   | London   |    100 | 1001 |
+| 3006 | 1098.16 | 1996-10-03 | 2008 | 2008 | Cisneros | San Jose |    300 | 1007 |
+| 3007 |   75.75 | 1996-10-04 | 2002 | 2002 | Giovanni | Rome     |    200 | 1003 |
+| 3009 | 1713.23 | 1996-10-04 | 2002 | 2002 | Giovanni | Rome     |    200 | 1003 |
+| 3010 | 1309.95 | 1996-10-06 | 2004 | 2004 | Grass    | Berlin   |    300 | 1002 |
++------+---------+------------+------+------+----------+----------+--------+------+
+7 rows in set (0.00 sec)
+
+96 ques:
+mysql> select sname, cname, a.city, b.city from salespeople a, customer b where a.snum = b.snum  and a.city != b.city;
++---------+----------+-----------+----------+
+| sname   | cname    | city      | city     |
++---------+----------+-----------+----------+
+| AxelRod | Giovanni | New York  | Rome     |
+| Serres  | Grass    | San Jose  | Berlin   |
+| Motika  | Pereira  | London    | Rome     |
+| Rifkin  | Cisneros | Barcelona | San Jose |
++---------+----------+-----------+----------+
+4 rows in set (0.00 sec)
+
+mysql> select sname, cname, a.city, b.city from salespeople a, customer b where a.snum = b.snum  and a.city = b.city;
++--------+---------+----------+----------+
+| sname  | cname   | city     | city     |
++--------+---------+----------+----------+
+| Peel   | Hofman  | London   | London   |
+| Serres | Liu     | San Jose | San Jose |
+| Peel   | Clemens | London   | London   |
++--------+---------+----------+----------+
+3 rows in set (0.00 sec)
+
+97 ques:
+
+mysql> select sname from salespeople where snum in(select snum from customer where rating < 250) and com > 0.11;
++--------+
+| sname  |
++--------+
+| Peel   |
+| Serres |
++--------+
+2 rows in set (0.00 sec)
+
+98 ques:
+
+mysql> select a.sname, b.sname, a.com, b.com,a.city, b.city from salespeople a, salespeople b where a.snum != b.snum and a.city = b.city and a.com != b.com;
++--------+--------+------+------+--------+--------+
+| sname  | sname  | com  | com  | city   | city   |
++--------+--------+------+------+--------+--------+
+| Motika | Peel   | 0.11 | 0.12 | London | London |
+| Fran   | Peel   | 0.26 | 0.12 | London | London |
+| Peel   | Motika | 0.12 | 0.11 | London | London |
+| Fran   | Motika | 0.26 | 0.11 | London | London |
+| Peel   | Fran   | 0.12 | 0.26 | London | London |
+| Motika | Fran   | 0.11 | 0.26 | London | London |
++--------+--------+------+------+--------+--------+
+6 rows in set (0.00 sec)
+
+
+99 ques:
+
+mysql> select sname, com, amt, max(com * amt) from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum;
++-------+------+--------+----------------+
+| sname | com  | amt    | max(com * amt) |
++-------+------+--------+----------------+
+| Peel  | 0.12 | 767.19 |      1187.0256 |
++-------+------+--------+----------------+
+1 row in set (0.00 sec)
+
+mysql> select sname,sum(amt),com, (sum(amt) * com)as comission from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum group by sname order by comission desc limit 1 ;
++-------+----------+------+-----------+
+| sname | sum(amt) | com  | comission |
++-------+----------+------+-----------+
+| Peel  | 15382.07 | 0.12 | 1845.8484 |
++-------+----------+------+-----------+
+1 row in set (0.00 sec)
+
+100 ques:
+
+mysql> select cname, max(rating), count(onum) from customer a, orders b where a.cnum = b.cnum and a.cnum in (select cnum from orders) group by cname;
++----------+-------------+-------------+
+| cname    | max(rating) | count(onum) |
++----------+-------------+-------------+
+| Cisneros |         300 |           2 |
+| Clemens  |         100 |           2 |
+| Giovanni |         200 |           2 |
+| Grass    |         300 |           1 |
+| Hofman   |         100 |           1 |
+| Liu      |         200 |           1 |
+| Pereira  |         100 |           1 |
++----------+-------------+-------------+
+7 rows in set (0.00 sec)
+
+101 ques:
+
+mysql> select cname, max(amt) as maximamt, rating from customer a, orders b where a.cnum = b.cnum and a.cnum in (select cnum from orders) group by cname order by maximamt desc;
++----------+----------+--------+
+| cname    | maximamt | rating |
++----------+----------+--------+
+| Clemens  |  9891.88 |    100 |
+| Liu      |  5160.45 |    200 |
+| Pereira  |  1900.10 |    100 |
+| Giovanni |  1713.23 |    200 |
+| Grass    |  1309.95 |    300 |
+| Cisneros |  1098.16 |    300 |
+| Hofman   |   767.19 |    100 |
++----------+----------+--------+
+7 rows in set (0.00 sec)
+
+102 ques:
+
+mysql> select * from customer order by rating desc;
++------+----------+----------+--------+------+
+| cnum | cname    | city     | rating | snum |
++------+----------+----------+--------+------+
+| 2004 | Grass    | Berlin   |    300 | 1002 |
+| 2008 | Cisneros | San Jose |    300 | 1007 |
+| 2002 | Giovanni | Rome     |    200 | 1003 |
+| 2003 | Liu      | San Jose |    200 | 1002 |
+| 2001 | Hofman   | London   |    100 | 1001 |
+| 2006 | Clemens  | London   |    100 | 1001 |
+| 2007 | Pereira  | Rome     |    100 | 1004 |
++------+----------+----------+--------+------+
+7 rows in set (0.00 sec)
+
+103 ques:
+
+mysql> select odate, cname from orders a, customer b where a.cnum = b.cnum and b.cnum = (select cnum from customer where cname = 'Hofman');
++------------+--------+
+| odate      | cname  |
++------------+--------+
+| 1996-10-03 | Hofman |
++------------+--------+
+1 row in set (0.00 sec)
+
+mysql> select odate from orders where cnum = (select cnum from customer where cname = 'Hofman');
++------------+
+| odate      |
++------------+
+| 1996-10-03 |
++------------+
+1 row in set (0.00 sec)
+
+104 ques:
+
+mysql> select sname, com from salespeople;
++---------+------+
+| sname   | com  |
++---------+------+
+| Peel    | 0.12 |
+| Serres  | 0.13 |
+| AxelRod | 0.10 |
+| Motika  | 0.11 |
+| Fran    | 0.26 |
+| Rifkin  | 0.15 |
++---------+------+
+6 rows in set (0.00 sec)
+
+mysql> select sname, com,(com * amt) from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum;
++---------+------+-------------+
+| sname   | com  | (com * amt) |
++---------+------+-------------+
+| Peel    | 0.12 |     92.0628 |
+| Peel    | 0.12 |    566.7600 |
+| Peel    | 0.12 |   1187.0256 |
+| Serres  | 0.13 |    670.8585 |
+| Serres  | 0.13 |    170.2935 |
+| AxelRod | 0.10 |      7.5750 |
+| AxelRod | 0.10 |    171.3230 |
+| Motika  | 0.11 |    209.0110 |
+| Rifkin  | 0.15 |      2.8035 |
+| Rifkin  | 0.15 |    164.7240 |
++---------+------+-------------+
+10 rows in set (0.00 sec)
+ yes
+
+105 ques:
+
+mysql> select sname,snum from salespeople where snum in (select snum from customer where cnum in (select cnum from orders where odate not between '1996-10-03' and '1996-10-05'));
++--------+------+
+| sname  | snum |
++--------+------+
+| Peel   | 1001 |
+| Serres | 1002 |
++--------+------+
+2 rows in set (0.00 sec)
+
+106 ques:
+
+mysql> select count(distinct(snum)) from salespeople where snum in (select snum from customer where cnum in (select cnum from customer where cnum in (select cnum from orders)));
++-----------------------+
+| count(distinct(snum)) |
++-----------------------+
+|                     5 |
++-----------------------+
+1 row in set (0.00 sec)
+
+107 ques:
+
+mysql> select count(distinct(cnum)) from orders;
++-----------------------+
+| count(distinct(cnum)) |
++-----------------------+
+|                     7 |
++-----------------------+
+1 row in set (0.06 sec)
+
+108 ques:
+
+mysql> select odate,sname, max(amt) from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum group by sname;
++------------+---------+----------+
+| odate      | sname   | max(amt) |
++------------+---------+----------+
+| 1996-10-04 | AxelRod |  1713.23 |
+| 1996-10-03 | Motika  |  1900.10 |
+| 1996-10-03 | Peel    |  9891.88 |
+| 1996-10-03 | Rifkin  |  1098.16 |
+| 1996-10-03 | Serres  |  5160.45 |
++------------+---------+----------+
+5 rows in set (0.00 sec)
+
+109 ques:
+
+mysql> select sname from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum and amt = (select max(amt) from orders);
++-------+
+| sname |
++-------+
+| Peel  |
++-------+
+
+mysql> select sname from salespeople where snum in (select snum from customer where cnum in (select cnum from orders group by cnum having count(onum) = (select max(tot) from(select count(onum) as tot from orders group by cnum) as highorders)));
++---------+
+| sname   |
++---------+
+| Peel    |
+| AxelRod |
+| Rifkin  |
++---------+
+3 rows in set (0.00 sec)
+
+mysql> select max(tot) from(select count(onum) as tot from orders group by cnum) as highorders;
++----------+
+| max(tot) |
++----------+
+|        2 |
++----------+
+1 row in set (0.07 sec)
+
+mysql> select count(onum) as high from orders group by cnum order by high desc limit 1;
++------+
+| high |
++------+
+|    2 |
++------+
+1 row in set (0.00 sec)
+
+mysql> select sname from salespeople where snum in (select snum from customer where cnum = (select cnum from orders group by cnum having sum(amt) =(select max(tot) from (select sum(amt) as tot from orders group by cnum) as mini)));
++-------+
+| sname |
++-------+
+| Peel  |
++-------+
+1 row in set (0.00 sec)
+
+110 ques:
+
+mysql> select cname from customer where cnum = (select cnum from orders group by cnum having sum(amt) =(select min(tot) from (select sum(amt) as tot from orders group by cnum) as mini));
++--------+
+| cname  |
++--------+
+| Hofman |
++--------+
+1 row in set (0.00 sec)
+
+111 ques:
+
+mysql> select sname from salespeople where snum in (select snum from customer where cnum in (select cnum from orders where amt < 200));
++---------+
+| sname   |
++---------+
+| AxelRod |
+| Rifkin  |
++---------+
+2 rows in set (0.00 sec)
+
+112 ques:
+
+mysql> select a.cname, b.cname, a.cnum, b.cnum,a.rating, b.rating from customer a, customer b where a.rating = b.rating and a.cnum != b.cnum and a.cnum < b.cnum;
++----------+----------+------+------+--------+--------+
+| cname    | cname    | cnum | cnum | rating | rating |
++----------+----------+------+------+--------+--------+
+| Hofman   | Clemens  | 2001 | 2006 |    100 |    100 |
+| Hofman   | Pereira  | 2001 | 2007 |    100 |    100 |
+| Giovanni | Liu      | 2002 | 2003 |    200 |    200 |
+| Grass    | Cisneros | 2004 | 2008 |    300 |    300 |
+| Clemens  | Pereira  | 2006 | 2007 |    100 |    100 |
++----------+----------+------+------+--------+--------+
+5 rows in set (0.00 sec)
+
+mysql> select a.cname, b.cname from customer a, customer b where a.rating = b.rating and a.cnum != b.cnum and a.cnum < b.cnum;
++----------+----------+
+| cname    | cname    |
++----------+----------+
+| Hofman   | Clemens  |
+| Hofman   | Pereira  |
+| Giovanni | Liu      |
+| Grass    | Cisneros |
+| Clemens  | Pereira  |
++----------+----------+
+5 rows in set (0.00 sec)
+
+113 ques:
+
+mysql> select cnum , onum, amt from orders where amt > (select avg(amt) from orders where odate = '1996-10-04');
++------+------+---------+
+| cnum | onum | amt     |
++------+------+---------+
+| 2007 | 3002 | 1900.10 |
+| 2003 | 3005 | 5160.45 |
+| 2008 | 3006 | 1098.16 |
+| 2006 | 3008 | 4723.00 |
+| 2002 | 3009 | 1713.23 |
+| 2004 | 3010 | 1309.95 |
+| 2006 | 3011 | 9891.88 |
++------+------+---------+
+7 rows in set (0.00 sec)
+
+mysql> select cnum , onum, amt, odate from orders where amt > (select avg(amt) from orders where odate = '1996-10-04');
++------+------+---------+------------+
+| cnum | onum | amt     | odate      |
++------+------+---------+------------+
+| 2007 | 3002 | 1900.10 | 1996-10-03 |
+| 2003 | 3005 | 5160.45 | 1996-10-03 |
+| 2008 | 3006 | 1098.16 | 1996-10-03 |
+| 2006 | 3008 | 4723.00 | 1996-10-05 |
+| 2002 | 3009 | 1713.23 | 1996-10-04 |
+| 2004 | 3010 | 1309.95 | 1996-10-06 |
+| 2006 | 3011 | 9891.88 | 1996-10-06 |
++------+------+---------+------------+
+7 rows in set (0.00 sec)
+
+114 ques:
+
+mysql> select cname from customer where cnum in (select cnum from orders where amt > (select avg(amt) from orders));
++---------+
+| cname   |
++---------+
+| Liu     |
+| Clemens |
++---------+
+2 rows in set (0.03 sec)
+
+115 ques:
+
+mysql> select cname from customer where rating > (select avg(rating) from customer group by city having city = 'San Jose');
++----------+
+| cname    |
++----------+
+| Grass    |
+| Cisneros |
++----------+
+2 rows in set (0.00 sec)
+
+116 ques:
+mysql> select a.snum,sum(amt) as total from salespeople a, customer b, orders c where a.snum in (select snum from customer where cnum in (select cnum from orders)) and a.snum = b.snum and b.cnum = c.cnum group by a.snum  having total > (select max(amt) from orders);
++------+----------+
+| snum | total    |
++------+----------+
+| 1001 | 15382.07 |
++------+----------+
+1 row in set (0.00 sec)
+
+117 ques:
+mysql> select snum, sname from salespeople where snum in (select snum from customer group by snum having count(cnum) > 1);
++------+--------+
+| snum | sname  |
++------+--------+
+| 1001 | Peel   |
+| 1002 | Serres |
++------+--------+
+2 rows in set (0.00 sec)
+
+118 ques:
+
+mysql> select a.sname, a.snum,a.city,b.city from salespeople a, customer b where a.snum != b.snum and a.city = b.city;
++--------+------+----------+----------+
+| sname  | snum | city     | city     |
++--------+------+----------+----------+
+| Motika | 1004 | London   | London   |
+| Fran   | 1005 | London   | London   |
+| Motika | 1004 | London   | London   |
+| Fran   | 1005 | London   | London   |
+| Serres | 1002 | San Jose | San Jose |
++--------+------+----------+----------+
+5 rows in set (0.00 sec)
+
+119 ques:
+
+mysql> select cname, rating, amt from customer a, orders b where a.cnum = b.cnum order by amt asc,rating asc limit 2;
++----------+--------+-------+
+| cname    | rating | amt   |
++----------+--------+-------+
+| Cisneros |    300 | 18.69 |
+| Giovanni |    200 | 75.75 |
++----------+--------+-------+
+2 rows in set (0.00 sec)
+
+mysql> select cname,rating,sum(amt)as tot from customer a, orders b where a.cnum = b.cnum group by cname order by tot asc, rating desc;
++----------+--------+----------+
+| cname    | rating | tot      |
++----------+--------+----------+
+| Hofman   |    100 |   767.19 |
+| Cisneros |    300 |  1116.85 |
+| Grass    |    300 |  1309.95 |
+| Giovanni |    200 |  1788.98 |
+| Pereira  |    100 |  1900.10 |
+| Liu      |    200 |  5160.45 |
+| Clemens  |    100 | 14614.88 |
++----------+--------+----------+
+7 rows in set (0.00 sec)
+rating of Cisneros and grass can be reduced.
+
+mysql> select cname,rating,sum(amt)as tot, (sum(amt)/ rating) as ratio from customer a, orders b where a.cnum = b.cnum group by cname order by ratio desc;
++----------+--------+----------+------------+
+| cname    | rating | tot      | ratio      |
++----------+--------+----------+------------+
+| Clemens  |    100 | 14614.88 | 146.148800 |
+| Liu      |    200 |  5160.45 |  25.802250 |
+| Pereira  |    100 |  1900.10 |  19.001000 |
+| Giovanni |    200 |  1788.98 |   8.944900 |
+| Hofman   |    100 |   767.19 |   7.671900 |
+| Grass    |    300 |  1309.95 |   4.366500 |
+| Cisneros |    300 |  1116.85 |   3.722833 |
++----------+--------+----------+------------+
+
+120 ques:
+
+mysql> select snum, city from salespeople where snum in (select snum from customer where city = 'Berlin');
++------+----------+
+| snum | city     |
++------+----------+
+| 1002 | San Jose |
++------+----------+
+1 row in set (0.00 sec)
+
+mysql> select snum, city, sname from salespeople where snum in (select snum from customer where city = 'Berlin');
++------+----------+--------+
+| snum | city     | sname  |
++------+----------+--------+
+| 1002 | San Jose | Serres |
++------+----------+--------+
+1 row in set (0.00 sec)
+
+80 ques:
+
+mysql> select concat('For the city : ',city) as city, concat('The max rating is ', max(rating)) as rating from customer group by city;
++-------------------------+-----------------------+
+| city                    | rating                |
++-------------------------+-----------------------+
+| For the city : Berlin   | The max rating is 300 |
+| For the city : London   | The max rating is 100 |
+| For the city : Rome     | The max rating is 200 |
+| For the city : San Jose | The max rating is 300 |
++-------------------------+-----------------------+
+4 rows in set, 1 warning (0.00 sec)
+
+121 ques:
+
+mysql> select sname, count(onum), sum(amt), count(distinct(b.cnum)), com from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum group by sname order by com desc;
++---------+-------------+----------+-------------------------+------+
+| sname   | count(onum) | sum(amt) | count(distinct(b.cnum)) | com  |
++---------+-------------+----------+-------------------------+------+
+| Rifkin  |           2 |  1116.85 |                       1 | 0.15 |
+| Serres  |           2 |  6470.40 |                       2 | 0.13 |
+| Peel    |           3 | 15382.07 |                       2 | 0.12 |
+| Motika  |           1 |  1900.10 |                       1 | 0.11 |
+| AxelRod |           2 |  1788.98 |                       1 | 0.10 |
++---------+-------------+----------+-------------------------+------+
+5 rows in set (0.08 sec)
+
+122 ques:
+
+mysql> select sum(tot) from(select (a.com*sum(c.amt)) as tot from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum and a.snum in (select snum from salespeople where city = 'London' or city = 'New York')group by a.snum, b.snum) as total;
++-----------+
+| sum(tot)  |
++-----------+
+| 2233.7574 |
++-----------+
+1 row in set (0.00 sec)
+
+mysql> select sum(amt) from orders where cnum in(select cnum from customer where city = 'Rome' or 'London');
++----------+
+| sum(amt) |
++----------+
+|  3689.08 |
++----------+
+1 row in set, 1 warning (0.00 sec)
+
+mysql> select sum(tot) as commision from(select (a.com*sum(c.amt)) as tot from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum and a.snum in (select snum from salespeople where city = 'London' or city = 'New York')group by a.snum, b.snum) as total union all select amount from (select sum(amt) as amount from orders where cnum in (select cnum from customer where city = 'Rome' or 'London')) as amnt;
++-----------+
+| commision |
++-----------+
+| 2233.7574 |
+| 3689.0800 |
++-----------+
+2 rows in set, 1 warning (0.00 sec)
+
+from the above data it is clearly visible that order does not exceed commision by 5 times
+
+123 ques:
+
+mysql> select a.snum,sname,odate,max(amt),a.city from salespeople a, customer b, orders c where a.snum in (select snum from customer b where b.cnum in (select cnum from orders)) and a.snum = b.snum and b.cnum = c.cnum group by sname;
++------+---------+------------+----------+-----------+
+| snum | sname   | odate      | max(amt) | city      |
++------+---------+------------+----------+-----------+
+| 1003 | AxelRod | 1996-10-04 |  1713.23 | New York  |
+| 1004 | Motika  | 1996-10-03 |  1900.10 | London    |
+| 1001 | Peel    | 1996-10-03 |  9891.88 | London    |
+| 1007 | Rifkin  | 1996-10-03 |  1098.16 | Barcelona |
+| 1002 | Serres  | 1996-10-03 |  5160.45 | San Jose  |
++------+---------+------------+----------+-----------+
+
+124 ques:
+
+mysql> select a.snum, sname, count(distinct(b.cnum)) as customers, count(onum) as orders, sum(amt) as total, rating  from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum group by a.snum order by customers asc, orders asc, total asc;
++------+---------+-----------+--------+----------+--------+
+| snum | sname   | customers | orders | total    | rating |
++------+---------+-----------+--------+----------+--------+
+| 1004 | Motika  |         1 |      1 |  1900.10 |    100 |
+| 1007 | Rifkin  |         1 |      2 |  1116.85 |    300 |
+| 1003 | AxelRod |         1 |      2 |  1788.98 |    200 |
+| 1002 | Serres  |         2 |      2 |  6470.40 |    300 |
+| 1001 | Peel    |         2 |      3 | 15382.07 |    100 |
++------+---------+-----------+--------+----------+--------+
+5 rows in set (0.00 sec)
+
+According to this data Motika or rifkin can be fired
+
+mysql> select snum,sname,sum(amt) as total from orders a right outer join (select a.snum,sname,cnum,cname from salespeople a left outer join customer b on a.snum = b.snum) as b on a.cnum = b.cnum group by snum,sname order by total desc;
++------+---------+----------+
+| snum | sname   | total    |
++------+---------+----------+
+| 1001 | Peel    | 15382.07 |
+| 1002 | Serres  |  6470.40 |
+| 1004 | Motika  |  1900.10 |
+| 1003 | AxelRod |  1788.98 |
+| 1007 | Rifkin  |  1116.85 |
+| 1005 | Fran    |     NULL |
++------+---------+----------+
+6 rows in set (0.00 sec)
+ Fran should be fired
+
+125 ques:
+
+mysql> select (sum(amt) - sum((com * amt))) as income_of_the_company from salespeople a, customer b, orders c where a.snum = b.snum and b.cnum = c.cnum;
++-----------------------+
+| income_of_the_company |
++-----------------------+
+|            23415.9631 |
++-----------------------+
+1 row in set (0.02 sec)
+
+
+127 ques:
+mysql> select sname,sum(amt),((sum(amt)/(select sum(amt) from orders))*100) as contributionpercent, com, (com*sum(amt)) as tot, (((com*sum(amt))/(select sum(amt) from orders))*100) as comision_percentage  from orders a, customer b, salespeople c where a.cnum = b.cnum and b.snum = c.snum group by sname;
++---------+----------+---------------------+------+-----------+---------------------+
+| sname   | sum(amt) | contributionpercent | com  | tot       | comision_percentage |
++---------+----------+---------------------+------+-----------+---------------------+
+| AxelRod |  1788.98 |            6.710755 | 0.10 |  178.8980 |          0.67107553 |
+| Motika  |  1900.10 |            7.127585 | 0.11 |  209.0110 |          0.78403430 |
+| Peel    | 15382.07 |           57.700650 | 0.12 | 1845.8484 |          6.92407796 |
+| Rifkin  |  1116.85 |            4.189486 | 0.15 |  167.5275 |          0.62842294 |
+| Serres  |  6470.40 |           24.271524 | 0.13 |  841.1520 |          3.15529814 |
++---------+----------+---------------------+------+-----------+---------------------+
+5 rows in set (0.00 sec)
+
+126 ques:
+mysql> select sum(amt) from orders;
++----------+
+| sum(amt) |
++----------+
+| 26658.40 |
++----------+
+1 row in set (0.00 sec)
+
+128 ques:
+mysql> select sname,sum(amt), com, (com*sum(amt)) as tot  from orders a, customer b, salespeople c where a.cnum = b.cnum and b.snum = c.snum group by sname;
++---------+----------+------+-----------+
+| sname   | sum(amt) | com  | tot       |
++---------+----------+------+-----------+
+| AxelRod |  1788.98 | 0.10 |  178.8980 |
+| Motika  |  1900.10 | 0.11 |  209.0110 |
+| Peel    | 15382.07 | 0.12 | 1845.8484 |
+| Rifkin  |  1116.85 | 0.15 |  167.5275 |
+| Serres  |  6470.40 | 0.13 |  841.1520 |
++---------+----------+------+-----------+
+5 rows in set (0.00 sec)
+
+
+
+
